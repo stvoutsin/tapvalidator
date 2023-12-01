@@ -356,7 +356,8 @@ class TAPValidator:
 
         try:
             votable = self.fetch_votable(query, url)
-            votable.get_first_table()
+            if votable:
+                votable.get_first_table()
         except Exception:
             res = False
             msg = f"Problem encountered with TAP service: {url} \n Query: {query}"
@@ -403,7 +404,16 @@ class TAPValidator:
             **STANDARD_PARAMS,
             "QUERY": query,
         }
-        response = requests.get(service_url + "/sync", params=params, timeout=1000)
+        try:
+            response = requests.get(service_url + "/sync", params=params, timeout=30)
+            response.raise_for_status()  # Raise an HTTPError for bad responses
+            return parse(io.BytesIO(response.content))
+
+        except requests.exceptions.Timeout:
+            # Handle timeout, return an empty string in this case
+            print("Request timed out")
+            return ""
+
         return parse(io.BytesIO(response.content))
 
     def compare_votables(self, votable1: VOTableFile, votable2: VOTableFile) -> bool:
@@ -493,7 +503,15 @@ class TAPValidator:
         else:
             return string
 
-    def generate_sql_queries(self, json_url: str, full: bool):
+    def generate_sql_queries(self, json_url: str, full: bool) -> list:
+        """
+        Generate a list of SQL queries, given a WFAU TAP json configuration file 
+        Args: 
+            json_url (str): The JSON file (as string link)
+            full (bool): Whether to generate a full list of all tables
+        Returns:
+            list: Query list
+        """
         # Define the namespace
         def print_xml_structure(xml_content):
             root = ET.fromstring(xml_content)
