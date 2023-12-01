@@ -409,7 +409,7 @@ class TAPValidator:
     def compare_votables(self, votable1: VOTableFile, votable2: VOTableFile) -> bool:
         """
                 Compares two VOTable results to ensure they have the same number of rows.
-        -Dlog4j.configurationFile
+                
                 Args:
                     votable1 (parse_single_table): The first VOTable result.
                     votable2 (parse_single_table): The second VOTable result.
