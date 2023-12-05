@@ -418,14 +418,14 @@ class TAPValidator:
 
     def compare_votables(self, votable1: VOTableFile, votable2: VOTableFile) -> bool:
         """
-                Compares two VOTable results to ensure they have the same number of rows.
-                
-                Args:
-                    votable1 (parse_single_table): The first VOTable result.
-                    votable2 (parse_single_table): The second VOTable result.
+        Compares two VOTable results to ensure they have the same number of rows.
 
-                Returns:
-                    bool: True if the VOTables have the same number of rows; False otherwise.
+        Args:
+            votable1 (parse_single_table): The first VOTable result.
+            votable2 (parse_single_table): The second VOTable result.
+
+        Returns:
+            bool: True if the VOTables have the same number of rows; False otherwise.
         """
         if len(votable1.resources) == 0 and len(votable2.resources) == 0:
             return True
@@ -505,13 +505,14 @@ class TAPValidator:
 
     def generate_sql_queries(self, json_url: str, full: bool) -> list:
         """
-        Generate a list of SQL queries, given a WFAU TAP json configuration file 
-        Args: 
+        Generate a list of SQL queries, given a WFAU TAP json configuration file
+        Args:
             json_url (str): The JSON file (as string link)
             full (bool): Whether to generate a full list of all tables
         Returns:
             list: Query list
         """
+
         # Define the namespace
         def print_xml_structure(xml_content):
             root = ET.fromstring(xml_content)
@@ -533,7 +534,6 @@ class TAPValidator:
 
                 # Read the XML content from the metadata URL
                 metadata_response = requests.get(metadata_url)
-                metadata_text = metadata_response.text
                 if metadata_response.status_code == 200:
                     metadata_xml = ET.fromstring(metadata_response.text)
 
