@@ -14,6 +14,7 @@ STANDARD_PARAMS = {
     "REQUEST": "doQuery",
 }
 
+
 TAP_METADATA = {
     "http://tap.roe.ac.uk/osa": "https://raw.githubusercontent.com/wfau/metadata/master/firethorn"
     "/config/osa-tap.json",
@@ -324,10 +325,6 @@ AlertingStrategies = {"slack": SlackAlerter}
 class TAPValidator:
     """
     A class for comparing results of SQL queries executed on two IVOA TAP services.
-
-    Args:
-        first_service (str): The URL of the first IVOA TAP service.
-        service2_url (str): The URL of the second IVOA TAP service.
     """
 
     def __init__(
@@ -341,6 +338,10 @@ class TAPValidator:
         self.second_service = second_service
         self.alerting_strategy = alerting_strategy
         self.alert_destination = alert_destination
+
+    def method(self, t):
+        "qwddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        pass
 
     def run_query(self, query: str, url: str) -> tuple:
         """
