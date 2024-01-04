@@ -10,37 +10,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-      - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.11
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.11
 
-      - name: Install redis
-        run: sudo apt-get install -y redis-tools redis-server
+    - name: Install redis
+      run: sudo apt-get install -y redis-tools redis-server
 
-      - name: Verify that redis is up
-        run: redis-cli ping
+    - name: Verify that redis is up
+      run: redis-cli ping
 
-      - name: Run tox
-        uses: lsst-sqre/run-tox@v1
-        with:
-          python-version: "3.11"
-          tox-envs: "py311, typing, lint"
+    - name: Run tox
+      uses: lsst-sqre/run-tox@v1
+      with:
+        python-version: "3.11"
+        tox-envs: "py311, typing, lint"
 
   lint:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
 
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+
+    - name: Run pre-commit
+      uses: pre-commit/action@v3.0.0
+
 
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.0
