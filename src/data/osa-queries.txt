@@ -1,0 +1,11 @@
+SELECT AVG(rAperMag3) FROM ATLASDR1.atlasSource WHERE rAperMag3 > 0.0
+SELECT ra, dec FROM ATLASDR1.atlasMergeLog WHERE dec BETWEEN -22.5 AND 20.5
+SELECT ra, dec FROM ATLASDR1.atlasMergeLog WHERE dec BETWEEN -22.5 AND -12.5
+SELECT mjdObs, ra, dec FROM ATLASDR1.atlasMergeLog, ATLASDR1.Multiframe WHERE (dec BETWEEN -22.5 AND -12.5) AND (gmfID = multiframeID) AND (gmfID > 0)
+SELECT ATLASDR1.atlasSource.*,2*DEGREES(ASIN(sqrt(power(-0.997825033922517-cx,2)+power(-0.052293794140904105-cy,2)+power(-0.040131792532559725-cz,2))/2))*60 as dist FROM atlasSource WHERE dec > -2.3166666666666664 and dec < -2.283333333333333 and RA >= 182.98331970017435 and RA <= 183.01668029982565 and ((cx * -0.997825033922517 + cy * -0.052293794140904105 + cz * -0.040131792532559725 ) >= 0.9999999576920253)
+Select top 10 * from ATLASDR1.Filter order by filterID
+select top 10 ra,dec from ATLASDR1.atlassource
+select top 2000 ra,dec from ATLASDR1.atlassource
+select top 10000 ra,dec from ATLASDR1.atlassource
+SELECT distinct mi.arcfile as i_name, mg.arcfile as g_name, mi.filterID as i_file, mg.filterID as g_filt FROM ATLASDR1.atlasSource as a, ATLASDR1.atlasMergeLog as l, ATLASDR1.multiframeDetector as dg, ATLASDR1.multiframeDetector as di, ATLASDR1.multiframe as mg, ATLASDR1.multiframe as mi WHERE a.framesetid=l.framesetid AND l.gmfid=dg.multiframeid AND l.imfid=di.multiframeid AND l.geNum=dg.extNum AND l.ieNum=di.extNum AND dg.multiframeid=mg.multiframeid AND di.multiframeid=mi.multiframeid AND mi.filterID=2 AND mg.filterID=4 AND a.gAperMag3 > 0.0 AND a.iAperMag3 > 0.0 AND (a.priOrSec=0 OR a.priOrSec=a.frameSetID)
+SELECT TOP 5 ra, dec FROM ATLASDR1.atlasMergeLog WHERE dec IN ( -22.5, -12.5)
