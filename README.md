@@ -4,7 +4,7 @@ TAP validation library (Python)
 
 ## TAP Validator Module
 
-This Python module provides TAP (Table Access Protocol) validation capabilities.<br> 
+This Python module provides TAP (Table Access Protocol) validation capabilities.<br>
 It allows validating and comparing two different TAP services or validating a single TAP service. <br>
 The validation can cover various aspects of a TAP service, or it can focus specifically on validating the tables of a TAP service.
 
@@ -20,10 +20,10 @@ The validation can cover various aspects of a TAP service, or it can focus speci
 ### Using Pip
 
     pip install -r requirements.txt
-    pip install . 
+    pip install .
 
 ### Using Poetry
-    
+
     poetry install
 
 
@@ -31,7 +31,7 @@ The validation can cover various aspects of a TAP service, or it can focus speci
 
     from tapvalidator.models.validation_config import ValidationConfiguration
     from tapvalidator.validators.tap_validator import TAPValidator
-    
+
     # Configure the TAP services and other options
     config = ValidationConfiguration(
         first_service=TAPService(url="your_first_tap_service_url"),
