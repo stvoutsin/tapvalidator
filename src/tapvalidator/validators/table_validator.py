@@ -116,7 +116,7 @@ class TableValidator:
             ValidationResult: The Validation Result object
         """
 
-        tasks = []
+        tasks = []  # type: ignore
         validation_result = ValidationResult()
 
         query_gen = QueryGenerator.generate_queries(self.tap_service, self.fullscan)
@@ -133,6 +133,7 @@ class TableValidator:
         # Wait for all tasks to complete
         results = await asyncio.gather(*tasks, return_exceptions=True)
         for res in results:
-            if res.status is not Status.SUCCESS:
-                validation_result.status = res.status
+            if isinstance(res, ValidationResult):
+                if res.status is not Status.SUCCESS:
+                    validation_result.status = res.status
         return validation_result

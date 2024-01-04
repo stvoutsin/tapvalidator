@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import random
 import string
 
@@ -10,7 +10,7 @@ class TAPEndpoints:
     """Dataclass which provides properties for getting
     the various endpoints of a TAP Service"""
 
-    url: str
+    url: str = ""
 
     @property
     def synchronous(self):
@@ -44,7 +44,7 @@ class TAPService:
 
     url: str = ""
     name: str = ""
-    endpoints: TAPEndpoints = None
+    endpoints: TAPEndpoints = field(default_factory=TAPEndpoints)
 
     def __post_init__(self):
         self.endpoints = TAPEndpoints(self.url)
