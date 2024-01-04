@@ -11,7 +11,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -24,33 +24,23 @@ jobs:
     - name: Verify that redis is up
       run: redis-cli ping
 
-    - name: Install Poetry
-      run: |
-        pip install poetry
-        poetry install
-
-    - name: Run pytest
-      run: poetry run pytest
+    - name: Run tox
+      uses: lsst-sqre/run-tox@v1
+      with:
+        python-version: "3.11"
+        tox-envs: "py311"
 
   lint:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: 3.11
+        python-version: "3.11"
 
-    - name: Install Poetry
-      run: |
-        pip install poetry
-        poetry install
+    - name: Run pre-commit
+      uses: pre-commit/action@v3.0.0
 
-    - name: Run Flake8
-      run: poetry run flake8 --max-line-length=100
-
-    - name: Run Black
-      run: poetry run black --check .

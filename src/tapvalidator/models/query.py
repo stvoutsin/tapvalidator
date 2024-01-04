@@ -1,7 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from tapvalidator.models.tap_service import TAPService
 from tapvalidator.models.status import Status
-from tapvalidator.models.result import Result, VOTable
+from tapvalidator.models.result import VOTable
 
 
 __all__ = ["Query"]
@@ -16,14 +16,14 @@ class Query:
         schema_name (str): The schema_name (i.e. database in MSSQL) (default "")
         table_name (str): The table_name used in the query (default "")
         tap_service (TAPService): The TAPService object being queried (default None)
-        result (Result): The Result object for this query (default None)
+        result (VOTable): The VOTable object for this query (default None)
     """
 
     query_text: str = ""
     schema_name: str = ""
     table_name: str = ""
-    tap_service: TAPService = None
-    result: Result | VOTable | None = None
+    tap_service: TAPService = field(default_factory=TAPService)
+    result: VOTable | None = None
 
     @property
     def status(self):

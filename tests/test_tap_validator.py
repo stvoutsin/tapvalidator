@@ -6,7 +6,7 @@ from tapvalidator.tap_validator import TAPValidator
 from tapvalidator.models.status import Status
 from tapvalidator.models.query import Query
 from tapvalidator.models.result import ValidationResult
-from tapvalidator.services.alerter import AlertingStrategies, AlertStrategy
+from tapvalidator.services.alerter import AlerterResolver, AlertStrategy
 from tapvalidator.exceptions.invalid_mode import InvalidRunMode
 
 
@@ -39,7 +39,7 @@ class TestTAPValidator:
         # Create a TAPValidator instance
         config = ValidationConfiguration(
             first_service=tap_service,
-            alerter=AlertingStrategies[AlertStrategy.LOG],
+            alerter=AlerterResolver.get_strategy(AlertStrategy.LOG),
             alert_destination="http://example.com/alert",
         )
         tap_validator = TAPValidator(config)

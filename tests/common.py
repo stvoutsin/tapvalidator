@@ -1,12 +1,10 @@
 import os
 import platform
 from contextlib import contextmanager
-
-import pika
-import pytest
-
-from dramatiq import Worker
-from dramatiq.threading import is_gevent_active
+import pika  # type: ignore
+import pytest  # type: ignore
+from dramatiq import Worker  # type: ignore
+from dramatiq.threading import is_gevent_active  # type: ignore
 
 
 @contextmanager

@@ -5,11 +5,11 @@ import os
 import time
 import requests
 from requests import HTTPError
-import dramatiq
-from dramatiq.brokers.rabbitmq import RabbitmqBroker
-from dramatiq.brokers.stub import StubBroker
-from dramatiq.results.backends import RedisBackend
-from dramatiq.results import Results
+import dramatiq  # type: ignore
+from dramatiq.brokers.rabbitmq import RabbitmqBroker  # type: ignore
+from dramatiq.brokers.stub import StubBroker  # type: ignore
+from dramatiq.results.backends import RedisBackend  # type: ignore
+from dramatiq.results import Results  # type: ignore
 from tapvalidator.constants.tap_params import STANDARD_PARAMS
 from tapvalidator.settings import settings
 from tapvalidator.logger.logger import logger

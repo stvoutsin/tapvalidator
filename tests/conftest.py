@@ -5,13 +5,13 @@ import subprocess
 import sys
 import pytest
 import redis
-import dramatiq
+import dramatiq  # type: ignore
 from dramatiq import Worker
-from dramatiq.brokers.rabbitmq import RabbitmqBroker
-from dramatiq.brokers.redis import RedisBroker
-from dramatiq.brokers.stub import StubBroker
-from dramatiq.rate_limits import backends as rl_backends
-from dramatiq.results import backends as res_backends
+from dramatiq.brokers.rabbitmq import RabbitmqBroker  # type: ignore
+from dramatiq.brokers.redis import RedisBroker  # type: ignore
+from dramatiq.brokers.stub import StubBroker  # type: ignore
+from dramatiq.rate_limits import backends as rl_backends  # type: ignore
+from dramatiq.results import backends as res_backends  # type: ignore
 from .common import RABBITMQ_CREDENTIALS
 
 logfmt = "[%(asctime)s] [%(threadName)s] [%(name)s] [%(levelname)s] %(message)s"

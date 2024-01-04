@@ -22,7 +22,8 @@ class VOSIValidator:
         validation_result.status = Status.SUCCESS
 
         try:
-            ElementTree.fromstring(self.tap_service.endpoints.tables)
+            if self.tap_service.endpoints:
+                ElementTree.fromstring(self.tap_service.endpoints.tables)
         except ParseError:
             validation_result.status = Status.FAIL
 

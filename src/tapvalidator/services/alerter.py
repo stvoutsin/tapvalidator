@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Protocol, Type
 import requests
 from enum import Enum, auto
 import json
@@ -11,7 +11,7 @@ __all__ = [
     "LogAlerter",
     "AlerterFactory",
     "AlerterService",
-    "AlertingStrategies",
+    "AlerterResolver",
 ]
 
 
@@ -34,7 +34,7 @@ class AlertStrategy(Enum):
     LOG = auto()
 
 
-class SlackAlerter:
+class SlackAlerter(Alerter):
     """Slack Alerter, implementation of the Alert Protocol, sends an alert to a
     Slack channel"""
 
@@ -60,7 +60,7 @@ class SlackAlerter:
         return r.text
 
 
-class LogAlerter:
+class LogAlerter(Alerter):
     """Alerting implementation for notifying a log"""
 
     @staticmethod
@@ -71,7 +71,27 @@ class LogAlerter:
 
 
 """Map of AlertStrategies, to their equivalent Alerters"""
-AlertingStrategies = {AlertStrategy.SLACK: SlackAlerter, AlertStrategy.LOG: LogAlerter}
+
+
+class AlerterResolver:
+    """Alerting Strategies class
+    Allows to get Alerter given an AlertStrategy ENUM value"""
+
+    ALERTER_MAP = {
+        AlertStrategy.SLACK: SlackAlerter,
+        AlertStrategy.LOG: LogAlerter,
+    }
+
+    @staticmethod
+    def get_strategy(alert_strategy: AlertStrategy) -> Type[Alerter]:
+        """Get Alert Strategy, given an AlertStrategy Enum value
+
+        Args:
+            alert_strategy:
+        Returns:
+            Alerter: The equivalent Alerter
+        """
+        return AlerterResolver.ALERTER_MAP[alert_strategy]
 
 
 class AlerterService:
@@ -99,7 +119,8 @@ class AlerterFactory:
             Alerter: The equivalent Alerter
 
         """
+
         if slack_webhook:
-            return AlertingStrategies[AlertStrategy.SLACK]
+            return AlerterResolver.get_strategy(AlertStrategy.SLACK)
         else:
-            return AlertingStrategies[AlertStrategy.LOG]
+            return AlerterResolver.get_strategy(AlertStrategy.LOG)

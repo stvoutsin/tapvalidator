@@ -1,6 +1,6 @@
-import dramatiq
-from dramatiq.results import Results
-from dramatiq.results.backends import StubBackend
+import dramatiq  # type: ignore
+from dramatiq.results import Results  # type: ignore
+from dramatiq.results.backends import StubBackend  # type: ignore
 
 
 def test_actors_can_be_defined(stub_broker):

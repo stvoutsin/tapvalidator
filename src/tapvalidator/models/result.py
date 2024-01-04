@@ -1,7 +1,7 @@
 from io import BytesIO
 from dataclasses import dataclass, field
-from astropy.io.votable.tree import Table
-from astropy.io.votable import parse
+from astropy.io.votable.tree import Table  # type: ignore
+from astropy.io.votable import parse  # type: ignore
 from tapvalidator.models.status import Status
 from tapvalidator.logger.logger import logger
 from tapvalidator.utility.xml_parser import XMLParser

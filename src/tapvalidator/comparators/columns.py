@@ -16,7 +16,7 @@ class ColumnComparator:
     """
 
     @staticmethod
-    def compare(actual: VOTable, expected: VOTable) -> bool:
+    def compare(actual: VOTable | None, expected: VOTable | None) -> bool:
         """
         Compare the columns we get from a query to a table in TAP, with the expected
         columns we see in TAP_SCHEMA for that table
@@ -28,7 +28,7 @@ class ColumnComparator:
             bool: Whether the comparison was successful or not
         """
 
-        def _get_columns_from_votable_fields(result: VOTable) -> dict:
+        def _get_columns_from_votable_fields(result: VOTable | None) -> dict:
             """Internal method used to extract a mapping of column name to datatype
             from the fields of a VOTable
 
@@ -38,11 +38,12 @@ class ColumnComparator:
                 dict: The mapping
             """
             mapping = {}
-            for field in result.astropy_table.fields:
-                mapping[field.ID] = field.datatype
+            if result and result.astropy_table:
+                for field in result.astropy_table.fields:
+                    mapping[field.ID] = field.datatype
             return mapping
 
-        def _get_columns_from_votable_data(result: VOTable) -> dict:
+        def _get_columns_from_votable_data(result: VOTable | None) -> dict:
             """Internal method used to extract a mapping of column name to
             datatype from the rows of a VOTable
 
@@ -53,8 +54,9 @@ class ColumnComparator:
             """
 
             mapping = {}
-            for key, val in result.astropy_table.array:
-                mapping[key] = val
+            if result and result.astropy_table:
+                for key, val in result.astropy_table.array:
+                    mapping[key] = val
             return mapping
 
         actual_columns = _get_columns_from_votable_fields(actual)

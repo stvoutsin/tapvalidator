@@ -49,15 +49,20 @@ class QueryGenerator:
         schemas_result = QueryRunner.run_sync_query(
             QueryGenerator.get_schemas_query(tap_service=tap_service)
         )
-        schemas = schemas_result.astropy_table.array
+        schemas = (
+            schemas_result.astropy_table.array if schemas_result.astropy_table else []
+        )
 
         for schema in schemas:
             schema_name = schema[0]
-            tables = QueryRunner.run_sync_query(
+            tables_result = QueryRunner.run_sync_query(
                 QueryGenerator.get_tables_query(
                     schema_name=schema_name, tap_service=tap_service
                 )
-            ).astropy_table.array
+            )
+            tables = (
+                tables_result.astropy_table.array if tables_result.astropy_table else []
+            )
 
             if fullscan:
                 for table in tables:
