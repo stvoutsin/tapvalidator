@@ -28,6 +28,7 @@ jobs:
       uses: lsst-sqre/run-tox@v1
       with:
         python-version: "3.11"
+        tox-envs: "py311"
 
   lint:
     runs-on: ubuntu-latest
