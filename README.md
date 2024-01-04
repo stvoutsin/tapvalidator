@@ -27,6 +27,16 @@ The validation can cover various aspects of a TAP service, or it can focus speci
     poetry install
 
 
+
+
+## Dramatiq
+
+The library uses dramatiq for asynchronous tasks
+To start the workers run:
+
+    dramatiq tasks
+
+
 ## Usage
 
     from tapvalidator.models.validation_config import ValidationConfiguration
