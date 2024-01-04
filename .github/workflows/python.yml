@@ -43,4 +43,8 @@ jobs:
         pip install poetry
         poetry install
 
-    -
+    - name: Run Flake8
+      run: poetry run flake8
+
+    - name: Run Black
+      run: poetry run black --check .
