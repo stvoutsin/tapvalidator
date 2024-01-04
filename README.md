@@ -11,8 +11,8 @@ The validation can cover various aspects of a TAP service, or it can focus speci
 ## Features
 
 **Comparison**: Compare SQL queries between two TAP services.<br>
-**Validation**: Validate a TAP service based on a list of queries.<br>
 **Table Validation**: Validate the tables of a TAP service.<br>
+**Validation**: Validate a TAP service, including Table Validation<br>
 
 
 ## Installation
@@ -25,7 +25,6 @@ The validation can cover various aspects of a TAP service, or it can focus speci
 ### Using Poetry
 
     poetry install
-
 
 
 
