@@ -11,6 +11,8 @@ its underlying SQL Database
 """
 import asyncio
 import click
+
+from tapvalidator.models.status import Status
 from tapvalidator.models.tap_service import TAPService
 from tapvalidator.logger.logger import logger
 from tapvalidator.services.tap_query import QueryRunner
@@ -88,12 +90,12 @@ class TAPValidator:
         if not self.config.alerter:
             return
 
-        for failure in validation_result.failures:
+        if validation_result.status is not Status.SUCCESS:
             msg = StringProcessor.generate_alert_message(
-                string=failure.query_text,
+                validation_result=validation_result,
                 tap_service=self.config.first_service,
-                result=failure.result,
             )
+
             AlerterService.send_alert(
                 msg=msg,
                 destination=self.config.alert_destination,
