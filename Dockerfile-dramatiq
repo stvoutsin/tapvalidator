@@ -1,0 +1,14 @@
+# Dockerfile for Dramatiq service
+
+FROM python:3.11.3
+
+WORKDIR /app
+
+# Copy only the necessary files for Dramatiq
+COPY pyproject.toml poetry.lock /app/
+RUN pip install poetry && poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi
+
+# Copy the 'tapvalidator' module
+COPY src/tapvalidator /app/tapvalidator
+
+CMD ["poetry", "run", "dramatiq", "tapvalidator.tasks", "-p", "4", "-t", "4"]
