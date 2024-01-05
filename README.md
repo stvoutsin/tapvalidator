@@ -14,6 +14,15 @@ The validation can cover various aspects of a TAP service, or it can focus speci
 **Table Validation**: Validate the tables of a TAP service.<br>
 **Validation**: Validate a TAP service, including Table Validation<br>
 
+### Requirements
+
+The library uses Dramatiq. This requires an instance of Redis to be running, and the URL needs to be passed in to the tapvalidator/settings.ini file
+To start the workers run:
+
+    dramatiq tasks
+
+If using docker-compose to run the library, this step is handled for you.
+
 
 ## Installation
 
@@ -25,15 +34,7 @@ The validation can cover various aspects of a TAP service, or it can focus speci
 ### Using Poetry
 
     poetry install
-
-
-
-## Dramatiq
-
-The library uses dramatiq for asynchronous tasks
-To start the workers run:
-
-    dramatiq tasks
+    
 
 
 ## Usage
@@ -63,6 +64,21 @@ Make sure to replace placeholder URLs and paths with your actual TAP service URL
 ## Command-Line Interface (CLI)
 
     python tap_validator.py --mode TABLE_VALIDATION_ONLY --tap_service your_first_tap_service_url  --slack_webhook your_slack_webhook_url
+
+## Docker 
+
+The library can also be used via Docker: <br>
+First create an .env file with the required params:
+
+        TAP_SERVICE=http://your_tap_service_url <br>
+        MODE=your_mode_value <br>
+        SLACK_WEBHOOK=https://your_slack_webhook_url <br>
+
+Using docker-compose, run the stack:    
+
+    docker-compose --env-file .env up
+
+Note: This will bring up Redis, Dramatiq and run the tapvalidator
 
 ## License
 
