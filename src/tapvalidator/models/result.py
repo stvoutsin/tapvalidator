@@ -67,9 +67,12 @@ class ValidationResult(Result):
     failures: list = field(default_factory=list)
     status: Status = Status.PENDING
 
-    def as_string(self) -> str:
+    def as_string(self, validation_type_str: str = "") -> str:
         """Get Validation Result as a string"""
-        res = f"Validation result: [{self.status}]\n"
+        res = (
+            f"{validation_type_str + ' ' if validation_type_str else ''}Validation "
+            f"result: [{self.status}]\n"
+        )
         if self.messages:
             res += "Relevant logs:\n"
             for message in self.messages:
@@ -94,9 +97,12 @@ class TableValidationResult(ValidationResult):
         failures (list): The list of failed queries
     """
 
-    def as_string(self) -> str:
+    def as_string(self, validation_type_str: str = "Table") -> str:
         """Get Table Validation Result as a string"""
-        res = f"Table Validation result status: [{self.status}]\n"
+        res = (
+            f"{validation_type_str + ' ' if validation_type_str else ''}"
+            f"Validation result status: [{self.status}]\n"
+        )
         if self.status is not Status.SUCCESS:
             res += "The following queries failed:\n"
             for query in self.failures:
@@ -115,12 +121,12 @@ class VOSIValidationResult(ValidationResult):
         failures (list): The list of failed queries
     """
 
-    failures: list = field(default_factory=list)
-    status: Status = Status.PENDING
-
-    def as_string(self) -> str:
+    def as_string(self, validation_type_str: str = "VOSI") -> str:
         """Get VOSI Validation Result as a string"""
-        res = f"VOSI Validation result status: [{self.status}] \n"
+        res = (
+            f"{validation_type_str + ' ' if validation_type_str else ''}"
+            f"Validation result status: [{self.status}] \n"
+        )
         if self.status is not Status.SUCCESS:
             res += "Relevant logs: \n"
             for message in self.messages:

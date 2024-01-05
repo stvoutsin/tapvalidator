@@ -30,11 +30,12 @@ class TestTAPValidator:
         # Assert that the TableValidator's validate method was called
         mock_validate.assert_called_once()
 
+    @pytest.mark.asyncio
     @patch(
         "tapvalidator.services.alerter.AlerterService.send_alert",
         return_value=True,
     )
-    def test_handle_notifications(self, mock_send_alert):
+    async def test_handle_notifications(self, mock_send_alert):
         tap_service = TAPService(url="http://tap.roe.ac.uk/osa")
         # Create a TAPValidator instance
         config = ValidationConfiguration(
@@ -48,7 +49,7 @@ class TestTAPValidator:
         validation_result = ValidationResult(failures=[q], status=Status.FAIL)
 
         # Call the handle_notifications method
-        tap_validator.handle_notifications(validation_result)
+        await tap_validator.handle_notifications(validation_result)
 
         # Assert that the send_alert function was called
         mock_send_alert.assert_called_once()

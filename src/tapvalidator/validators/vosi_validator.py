@@ -6,16 +6,18 @@ from tapvalidator.models.status import Status
 from tapvalidator.utility.xml_parser import XMLParser
 from tapvalidator.utility.string_processor import StringProcessor
 from tapvalidator.logger.logger import logger
+from tapvalidator.validators.protocol import Validator
+from tapvalidator.models.result import ValidationResult
 
 
-class VOSIValidator:
+class VOSIValidator(Validator):
     """Validator for VOSI endpoints of a TAP Service
     VOSI endpoints is the /tables metadata endpoints of a TAP Service"""
 
     def __init__(self, tap_service: TAPService):
         self.tap_service = tap_service
 
-    async def validate(self) -> VOSIValidationResult:
+    async def validate(self) -> ValidationResult:
         """Validate the VOSI Tables of a TAP Service
 
         Returns:
