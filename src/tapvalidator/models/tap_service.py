@@ -32,6 +32,10 @@ class TAPEndpoints:
     def availability(self):
         return f"{self.url}/availability"
 
+    def __getitem__(self, endpoint_name):
+        """Allow dynamic access to endpoints using square brackets"""
+        return getattr(self, endpoint_name, None)
+
 
 @dataclass
 class TAPService:

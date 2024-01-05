@@ -19,6 +19,8 @@ from tapvalidator.services.tap_query import QueryRunner
 from tapvalidator.models.result import ValidationResult
 from tapvalidator.models.query import Query
 from tapvalidator.services.alerter import AlerterFactory, AlerterService
+from tapvalidator.validators.availability_validator import AvailabilityValidator
+from tapvalidator.validators.capabilities_validator import CapabilitiesValidator
 from tapvalidator.validators.table_validator import TableValidator
 from tapvalidator.comparators.votable import VOTableComparator
 from tapvalidator.validators.vosi_validator import VOSIValidator
@@ -62,25 +64,28 @@ class TAPValidator:
         """
         table_validator = TableValidator(self.config.first_service, fullscan=fullscan)
         table_validator_results = await table_validator.validate()
-        self.handle_notifications(table_validator_results)
+        await self.handle_notifications(table_validator_results)
 
     async def validate_tap_service(self, fullscan: bool = False):
         """
         Validate the service with a list of queries
         Args:
             fullscan (bool): Whether to do a full scan
+
         """
-        table_validator = TableValidator(self.config.first_service, fullscan)
+        validators = [
+            TableValidator(self.config.first_service, fullscan),
+            VOSIValidator(self.config.first_service),
+            AvailabilityValidator(self.config.first_service),
+            CapabilitiesValidator(self.config.first_service),
+        ]
 
-        table_valid_results = await table_validator.validate()
-        vosi_validator = VOSIValidator(
-            self.config.first_service,
-        )
-        vosi_valid_results = await vosi_validator.validate()
-        self.handle_notifications(table_valid_results)
-        self.handle_notifications(vosi_valid_results)
+        for validator in validators:
+            validation_task = asyncio.create_task(validator.validate())
+            result = await validation_task
+            await self.handle_notifications(result)
 
-    def handle_notifications(self, validation_result: ValidationResult):
+    async def handle_notifications(self, validation_result: ValidationResult):
         """Handle sending out notification if this functionality is enabled
 
         Args:

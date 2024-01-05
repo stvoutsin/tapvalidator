@@ -5,6 +5,5 @@ from tapvalidator.models.result import ValidationResult
 class Validator(Protocol):
     """Validator Protocol definition"""
 
-    @staticmethod
-    def validate() -> ValidationResult:
+    async def validate(self) -> ValidationResult:
         ...

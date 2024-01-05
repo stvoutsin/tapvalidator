@@ -28,15 +28,23 @@ class XMLParser:
             return None
 
     @staticmethod
-    def check_element_exists(xml_string: str, element: str) -> bool:
+    def check_element_exists(xml_string: str, element: str, ns: str = "") -> bool:
         """Check if a tables
         Args:
             xml_string (str): The XML as a string
             element (str): The element we are looking for
+            ns (str): The namespace (default: "")
         Returns:
             bool: True if element found, False if not
         """
         root = ElementTree.fromstring(xml_string)
-        if root.find(element) is not None:
+        # Define the namespace
+        namespace = {"vo": ns}
+        if ns:
+            element_found = root.find(f".//vo:{element}", namespace)
+        else:
+            element_found = root.find(element)
+
+        if element_found is not None:
             return True
         return False

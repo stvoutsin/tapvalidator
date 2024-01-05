@@ -9,9 +9,10 @@ from tapvalidator.services.tap_query import QueryRunner
 from tapvalidator.logger.logger import logger, query_validation_logger
 from tapvalidator.comparators.columns import ColumnComparator
 from tapvalidator.settings import settings
+from tapvalidator.validators.protocol import Validator
 
 
-class TableValidator:
+class TableValidator(Validator):
     """
     Table Validator implementation.
     Implements validation methods to validate the Tables of a TAP Service
