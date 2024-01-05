@@ -25,6 +25,14 @@ class Query:
     tap_service: TAPService = field(default_factory=TAPService)
     result: VOTable | None = None
 
+    def update_status(self, status: Status):
+        """Update the Status of the query
+        Args:
+            status (Status(: A Status object
+        """
+        if self.result:
+            self.result.status = status
+
     @property
     def status(self):
         """

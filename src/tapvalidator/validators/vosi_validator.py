@@ -1,8 +1,11 @@
-from xml.etree import ElementTree
+import requests
 from xml.etree.ElementTree import ParseError
 from tapvalidator.models.tap_service import TAPService
-from tapvalidator.models.result import ValidationResult
+from tapvalidator.models.result import VOSIValidationResult
 from tapvalidator.models.status import Status
+from tapvalidator.utility.xml_parser import XMLParser
+from tapvalidator.utility.string_processor import StringProcessor
+from tapvalidator.logger.logger import logger
 
 
 class VOSIValidator:
@@ -12,19 +15,28 @@ class VOSIValidator:
     def __init__(self, tap_service: TAPService):
         self.tap_service = tap_service
 
-    async def validate(self) -> ValidationResult:
+    async def validate(self) -> VOSIValidationResult:
         """Validate the VOSI Tables of a TAP Service
 
         Returns:
             bool: Whether the tap_service tables endpoint is valid
         """
-        validation_result = ValidationResult()
+        validation_result = VOSIValidationResult()
         validation_result.status = Status.SUCCESS
 
         try:
             if self.tap_service.endpoints:
-                ElementTree.fromstring(self.tap_service.endpoints.tables)
-        except ParseError:
+                response = requests.get(self.tap_service.endpoints.tables)
+                if not XMLParser.check_element_exists(
+                    StringProcessor.clean_text(response.text), "schema"
+                ):
+                    raise ValueError("Schema element does not exist in XML file")
+
+        except (ParseError, ValueError) as exc:
+            logger.error(exc)
+            validation_result.messages.append(
+                f"Unable to parse /tables endpoint. " f"Error was: {str(exc)}"
+            )
             validation_result.status = Status.FAIL
 
         return validation_result

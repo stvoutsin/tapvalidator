@@ -125,6 +125,7 @@ class QueryGenerator:
             Query: The query
         """
         q = f"SELECT TOP 1 * FROM {StringProcessor.fix_keywords(table_name)}"
+
         return Query(
             query_text=q,
             schema_name=schema_name,

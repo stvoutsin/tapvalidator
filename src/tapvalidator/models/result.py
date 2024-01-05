@@ -67,6 +67,15 @@ class ValidationResult(Result):
     failures: list = field(default_factory=list)
     status: Status = Status.PENDING
 
+    def as_string(self) -> str:
+        """Get Validation Result as a string"""
+        res = f"Validation result: [{self.status}]\n"
+        if self.messages:
+            res += "Relevant logs:\n"
+            for message in self.messages:
+                res += f"{message}\n"
+        return res
+
     def __hash__(self):
         # Hash based on the tuple of attributes
         return hash((tuple(self.failures), self.status))
@@ -75,3 +84,45 @@ class ValidationResult(Result):
         if isinstance(other, ValidationResult):
             return (self.failures, self.status) == (other.failures, other.status)
         return False
+
+
+@dataclass
+class TableValidationResult(ValidationResult):
+    """Class representing the Result of a Table Validation
+    Attributes:
+        status (Status): The Status of the Result
+        failures (list): The list of failed queries
+    """
+
+    def as_string(self) -> str:
+        """Get Table Validation Result as a string"""
+        res = f"Table Validation result status: [{self.status}]\n"
+        if self.status is not Status.SUCCESS:
+            res += "The following queries failed:\n"
+            for query in self.failures:
+                res += f"[{query.query_text}]\n"
+                res += "Relevant logs:\n"
+                for message in query.result.messages:
+                    res += f"{message}\n"
+        return res
+
+
+@dataclass
+class VOSIValidationResult(ValidationResult):
+    """Class representing the Result of a VOSI Validation
+    Attributes:
+        status (Status): The Status of the Result
+        failures (list): The list of failed queries
+    """
+
+    failures: list = field(default_factory=list)
+    status: Status = Status.PENDING
+
+    def as_string(self) -> str:
+        """Get VOSI Validation Result as a string"""
+        res = f"VOSI Validation result status: [{self.status}] \n"
+        if self.status is not Status.SUCCESS:
+            res += "Relevant logs: \n"
+            for message in self.messages:
+                res += f"[{message}] \n"
+        return res

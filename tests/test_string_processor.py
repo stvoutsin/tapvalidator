@@ -1,6 +1,6 @@
 from tapvalidator.utility.string_processor import StringProcessor
 from tapvalidator.models.tap_service import TAPService
-from tapvalidator.models.result import Result
+from tapvalidator.models.result import ValidationResult
 from tapvalidator.models.status import Status
 
 
@@ -22,15 +22,15 @@ class TestStringProcessor:
     #  Should generate an alert message for a failed query with relevant logs
     def test_generate_alert_message(self):
         string_processor = StringProcessor()
-        query = "SELECT * FROM table"
         tap_service = TAPService(url="example_tap_service")
-        result = Result(status=Status.FAIL)
-        result.messages = ["Error 1", "Error 2"]
+        validation_result = ValidationResult(
+            messages=["Error 1", "Error 2"], status=Status.FAIL
+        )
         alert_message = string_processor.generate_alert_message(
-            query, tap_service, result
+            validation_result=validation_result, tap_service=tap_service
         )
         expected_message = (
-            "Query: SELECT * FROM table to TAP Service: "
-            "example_tap_service failed!\nRelevant logs: \nError 1\nError 2\n"
+            "Notification for tap_service: [example_tap_service]\n"
+            "Validation result: [FAIL]\nRelevant logs:\nError 1\nError 2\n"
         )
         assert alert_message == expected_message
