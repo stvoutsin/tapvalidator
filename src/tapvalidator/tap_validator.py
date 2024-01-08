@@ -18,7 +18,7 @@ from tapvalidator.logger.logger import logger
 from tapvalidator.services.tap_query import QueryRunner
 from tapvalidator.models.result import ValidationResult
 from tapvalidator.models.query import Query
-from tapvalidator.services.alerter import AlerterFactory, AlerterService
+from tapvalidator.services.alerter import AlerterResolver, AlerterService
 from tapvalidator.validators.availability_validator import AvailabilityValidator
 from tapvalidator.validators.capabilities_validator import CapabilitiesValidator
 from tapvalidator.validators.table_validator import TableValidator
@@ -155,6 +155,12 @@ class TAPValidator:
     default="",
 )
 @click.option(
+    "--notification_method",
+    help="The notification method for the validation",
+    required=False,
+    default="LOG",
+)
+@click.option(
     "--fullscan",
     is_flag=True,
     help="Whether to perform a full table scan if running the table validation",
@@ -167,6 +173,7 @@ def main(
     slack_webhook: str = "",
     queries: str = "",
     fullscan: bool = False,
+    notification_method: str = "LOG",
     secondary_tap_service: str = "",
 ):
     """TAP Validation tool, allows you to run validate that a TAP Service is
@@ -175,10 +182,12 @@ def main(
     Additionally, allows comparison to be run between two TAP Services that contain
     the same dataset
     """
+
+    notification_method = "SLACK" if slack_webhook is not None else notification_method
     config = ValidationConfiguration(
         first_service=TAPService(url=tap_service),
         second_service=TAPService(url=secondary_tap_service),
-        alerter=AlerterFactory.get_alerter(slack_webhook),
+        alerter=AlerterResolver.get_alerter(notification_method),
         alert_destination=slack_webhook,
         queries=queries,
     )
