@@ -6,7 +6,7 @@ import time
 import requests
 from requests import HTTPError
 import dramatiq  # type: ignore
-from dramatiq.brokers.rabbitmq import RabbitmqBroker  # type: ignore
+from dramatiq.brokers.redis import RedisBroker  # type: ignore
 from dramatiq.brokers.stub import StubBroker  # type: ignore
 from dramatiq.results.backends import RedisBackend  # type: ignore
 from dramatiq.results import Results  # type: ignore
@@ -14,12 +14,12 @@ from tapvalidator.constants.tap_params import STANDARD_PARAMS
 from tapvalidator.settings import settings
 from tapvalidator.logger.logger import logger
 
-result_backend = RedisBackend()
+result_backend = RedisBackend(url=settings.redis_url)
 if os.getenv("UNIT_TESTS") == "1":
     broker = StubBroker()
     broker.emit_after("process_boot")
 else:
-    broker = RabbitmqBroker()
+    broker = RedisBroker(url=settings.redis_url)
 
 broker.add_middleware(Results(backend=result_backend))
 dramatiq.set_broker(broker)
