@@ -70,9 +70,9 @@ Make sure to replace placeholder URLs and paths with your actual TAP service URL
 The library can also be used via Docker: <br>
 First create an .env file with the required params:
 
-        TAP_SERVICE=http://your_tap_service_url <br>
-        MODE=your_mode_value <br>
-        SLACK_WEBHOOK=https://your_slack_webhook_url <br>
+        TAP_SERVICE=http://your_tap_service_url
+        MODE=your_mode_value
+        SLACK_WEBHOOK=https://your_slack_webhook_url
 
 Using docker-compose, run the stack:    
 
