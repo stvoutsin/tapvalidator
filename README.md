@@ -54,7 +54,7 @@ If using docker-compose to run the library, this step is handled for you.
     # Create an instance of TAPValidator
     tap_validator = TAPValidator(config)
 
-    # Run the desired action (COMPARISON, VALIDATION, TABLE_VALIDATION_ONLY)
+    # Run the desired action (COMPARISON, VALIDATION, TABLE_VALIDATION)
     asyncio.run(tap_validator.run(mode="COMPARISON", fullscan=False))
 
 
