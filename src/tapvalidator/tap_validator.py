@@ -6,8 +6,10 @@ TAP Service For a single TAP Service, either a full TAP Validation can be run wh
 validates various aspects of a TAP Service, or if TABLE_VALIDATION_ONLY is the run
 mode, only the Tables of a TAP Service are validated.
 
-TABLE_VALIDATION_ONLY can be used for healthchecking a TAP Service and
+TABLE_VALIDATION can be used for healthchecking a TAP Service and
 its underlying SQL Database
+VALIDATION does a test of various parts of the TAP Service
+COMPARISON compares two TAP Services with a list of queries
 """
 import asyncio
 import click
