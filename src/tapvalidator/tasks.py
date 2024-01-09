@@ -2,7 +2,6 @@
 Dramatiq Tasks and Configuration
 """
 import os
-import time
 import requests
 from requests import HTTPError
 import dramatiq  # type: ignore
@@ -41,6 +40,7 @@ def run_sync_query_task(query_text: str, tap_service_url: str) -> str:
         **STANDARD_PARAMS,
         "QUERY": query_text,
     }
+
     try:
         response = requests.get(
             tap_service_url,
@@ -48,10 +48,7 @@ def run_sync_query_task(query_text: str, tap_service_url: str) -> str:
             timeout=settings.http_timeout,
         )
     except HTTPError as http_error:
-        logger.error(str(http_error))
+        logger.error(str(http_error), query=query_text)
         return str(http_error)
-    time.sleep(1)
-
-    logger.info(str(response.text))
 
     return response.text

@@ -28,6 +28,7 @@ class StringProcessor:
         """Generate the content of an alert message for a failed query
         Args:
             validation_result (ValidationResult): The validation result
+            tap_service (TAPService): The TAPService
         Returns:
             str: The updated query
         """

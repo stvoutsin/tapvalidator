@@ -18,6 +18,7 @@ from tapvalidator.logger.logger import logger
 from tapvalidator.services.tap_query import QueryRunner
 from tapvalidator.models.result import ValidationResult
 from tapvalidator.models.query import Query
+from tapvalidator.models.run_mode import Mode as RunMode
 from tapvalidator.services.alerter import AlerterResolver, AlerterService
 from tapvalidator.validators.availability_validator import AvailabilityValidator
 from tapvalidator.validators.capabilities_validator import CapabilitiesValidator
@@ -39,9 +40,9 @@ class TAPValidator:
     def __init__(self, config: ValidationConfiguration):
         self.config = config
         self.run_actions = {
-            "COMPARISON": self.compare_tap_services,
-            "VALIDATION": self.validate_tap_service,
-            "TABLE_VALIDATION_ONLY": self.validate_tables,
+            RunMode.COMPARISON.value: self.compare_tap_services,
+            RunMode.VALIDATION.value: self.validate_tap_service,
+            RunMode.TABLE_VALIDATION.value: self.validate_tables,
         }
 
     async def run(self, mode, **kwargs):
@@ -62,9 +63,11 @@ class TAPValidator:
         Args:
             fullscan (bool): Whether to do a full scan
         """
-        table_validator = TableValidator(self.config.first_service, fullscan=fullscan)
-        table_validator_results = await table_validator.validate()
-        await self.handle_notifications(table_validator_results)
+        validation_task = asyncio.create_task(
+            TableValidator(self.config.first_service, fullscan=fullscan).validate()
+        )
+        result = await validation_task
+        await self.handle_notifications(result)
 
     async def validate_tap_service(self, fullscan: bool = False):
         """
@@ -114,14 +117,15 @@ class TAPValidator:
                 queries = file.readlines()
 
             for query in queries:
-                votable1 = QueryRunner.run_sync_query(
-                    Query(query_text=query, tap_service=self.config.first_service)
-                )
-                votable2 = QueryRunner.run_sync_query(
-                    Query(query_text=query, tap_service=self.config.second_service)
-                )
+                q1 = Query(query_text=query, tap_service=self.config.first_service)
+                qtask = await QueryRunner.send_query(query=q1)
+                await QueryRunner.get_result(qtask)
 
-                if VOTableComparator.compare(votable1, votable2):
+                q2 = Query(query_text=query, tap_service=self.config.second_service)
+                qtask = await QueryRunner.send_query(query=q1)
+                await QueryRunner.get_result(qtask)
+
+                if VOTableComparator.compare(q1.result, q2.result):
                     logger.info(f"{query} [OK]")
                 else:
                     logger.error(f"{query} [OK]")

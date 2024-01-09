@@ -1,10 +1,11 @@
 from dataclasses import dataclass, field
 from tapvalidator.models.tap_service import TAPService
 from tapvalidator.models.status import Status
-from tapvalidator.models.result import VOTable
+from tapvalidator.models.result import VOTable, Result
+from dramatiq.message import Message  # type: ignore
 
 
-__all__ = ["Query"]
+__all__ = ["Query", "QueryTask"]
 
 
 @dataclass
@@ -23,7 +24,7 @@ class Query:
     schema_name: str = ""
     table_name: str = ""
     tap_service: TAPService = field(default_factory=TAPService)
-    result: VOTable | None = None
+    result: VOTable | Result | None = None
 
     def update_status(self, status: Status):
         """Update the Status of the query
@@ -41,3 +42,19 @@ class Query:
             Status: A Status object
         """
         return self.result.status if self.result else Status.PENDING
+
+
+@dataclass
+class QueryTask:
+    query: Query
+    task: Message
+
+    def __hash__(self):
+        return hash((id(self.query), id(self.task)))
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, QueryTask)
+            and self.query == other.query
+            and self.task == other.task
+        )
