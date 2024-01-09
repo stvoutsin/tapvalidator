@@ -9,9 +9,9 @@ from unittest.mock import Mock, patch
 
 
 @pytest.fixture
-def mock_runnner(mocker):
+def mock_runnner():
     mock = Mock()
-    mock.run_sync_query.return_value = "Test"
+    mock.send_query.return_value = "Test"
     return mock
 
 
@@ -59,13 +59,14 @@ class TestQuery:
         assert query.result is None
 
     #  Query object can be executed with an invalid query_text
-    def test_execute_query(self):
+    @pytest.mark.asyncio
+    async def test_execute_query(self):
         with patch(
-            "tapvalidator.services.tap_query.QueryRunner.run_sync_query"
+            "tapvalidator.services.tap_query.QueryRunner.send_query"
         ) as mock_runnner:
             mock_runnner.return_value = None
 
             tap_service = TAPService("http://example.com")
             query = Query("SELECT *", "schema", "table", tap_service)
-            QueryRunner.run_sync_query(query)
+            await QueryRunner.send_query(query)
             assert query.result is None

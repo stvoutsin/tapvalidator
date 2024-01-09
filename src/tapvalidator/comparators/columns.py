@@ -1,4 +1,4 @@
-from tapvalidator.models.result import VOTable
+from tapvalidator.models.result import VOTable, Result
 from tapvalidator.constants.vo_fields import convert_type
 from tapvalidator.settings import settings
 from tapvalidator.logger.logger import logger
@@ -16,7 +16,7 @@ class ColumnComparator:
     """
 
     @staticmethod
-    def compare(actual: VOTable | None, expected: VOTable | None) -> bool:
+    def compare(actual: Result | None, expected: Result | None) -> bool:
         """
         Compare the columns we get from a query to a table in TAP, with the expected
         columns we see in TAP_SCHEMA for that table
@@ -28,7 +28,7 @@ class ColumnComparator:
             bool: Whether the comparison was successful or not
         """
 
-        def _get_columns_from_votable_fields(result: VOTable | None) -> dict:
+        def _get_columns_from_votable_fields(result: Result | None) -> dict:
             """Internal method used to extract a mapping of column name to datatype
             from the fields of a VOTable
 
@@ -38,12 +38,12 @@ class ColumnComparator:
                 dict: The mapping
             """
             mapping = {}
-            if result and result.astropy_table:
+            if result and isinstance(result, VOTable) and result.astropy_table:
                 for field in result.astropy_table.fields:
                     mapping[field.ID] = field.datatype
             return mapping
 
-        def _get_columns_from_votable_data(result: VOTable | None) -> dict:
+        def _get_columns_from_votable_data(result: Result | None) -> dict:
             """Internal method used to extract a mapping of column name to
             datatype from the rows of a VOTable
 
@@ -54,7 +54,7 @@ class ColumnComparator:
             """
 
             mapping = {}
-            if result and result.astropy_table:
+            if result and isinstance(result, VOTable) and result.astropy_table:
                 for key, val in result.astropy_table.array:
                     mapping[key] = val
             return mapping

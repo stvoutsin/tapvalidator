@@ -1,11 +1,11 @@
-from enum import auto
+from enum import Enum
 
 __all__ = ["Mode"]
 
 
-class Mode:
+class Mode(Enum):
     """Enum for the various Run Modes for this package"""
 
-    COMPARISON = auto()
-    VALIDATION = auto()
-    TABLE_VALIDATION_ONLY = auto()
+    COMPARISON = "COMPARISON"
+    VALIDATION = "VALIDATION"
+    TABLE_VALIDATION = "TABLE_VALIDATION"

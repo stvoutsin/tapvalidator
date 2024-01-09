@@ -1,6 +1,7 @@
 import random
-from typing import Iterator
+from typing import AsyncGenerator
 from tapvalidator.models.query import Query
+from tapvalidator.models.result import VOTable
 from tapvalidator.models.tap_service import TAPService
 from tapvalidator.services.tap_query import QueryRunner
 from tapvalidator.utility.string_processor import StringProcessor
@@ -16,7 +17,9 @@ class QueryGenerator:
         pass
 
     @staticmethod
-    def generate_queries(tap_service: TAPService, fullscan: bool) -> Iterator[Query]:
+    async def generate_queries(
+        tap_service: TAPService, fullscan: bool
+    ) -> AsyncGenerator:
         """Generator, used for fetching queries to be tested for the TAP Service
         Gets a list of TAP_SCHEMA schemas (i.e. databases), and the generator
         iterates through the list of databases and fetches a "SELECT TOP 1 * FROM
@@ -28,7 +31,8 @@ class QueryGenerator:
             fullscan (bool): Whether to do a full table scan
 
         Returns:
-            Iterator[Query]: Iterator object, with iter yield type being a Query
+            AsyncGenerator[Query]: AsyncGenerator object, with iter yield type
+                being a Query
         """
 
         def _get_table_query(table_obj: tuple, schema_str: str):
@@ -46,22 +50,33 @@ class QueryGenerator:
                 table_name=table_name, tap_service=tap_service, schema_name=schema_str
             )
 
-        schemas_result = QueryRunner.run_sync_query(
-            QueryGenerator.get_schemas_query(tap_service=tap_service)
-        )
+        # This method is probably too complicated, and may not quite follow the
+        # single-responsibility rule. Needs Refactoring
+
+        schemas_query = QueryGenerator.get_schemas_query(tap_service=tap_service)
+        query_task = await QueryRunner.send_query(query=schemas_query)
+        schemas_result = await QueryRunner.get_result(query_task=query_task, block=True)
+
         schemas = (
-            schemas_result.astropy_table.array if schemas_result.astropy_table else []
+            schemas_result.astropy_table.array
+            if isinstance(schemas_result, VOTable) and schemas_result.astropy_table
+            else []
         )
 
         for schema in schemas:
             schema_name = schema[0]
-            tables_result = QueryRunner.run_sync_query(
-                QueryGenerator.get_tables_query(
-                    schema_name=schema_name, tap_service=tap_service
-                )
+            table_query = QueryGenerator.get_tables_query(
+                schema_name=schema_name, tap_service=tap_service
             )
+            tables_task = await QueryRunner.send_query(table_query)
+            tables_result = await QueryRunner.get_result(
+                query_task=tables_task, block=True
+            )
+
             tables = (
-                tables_result.astropy_table.array if tables_result.astropy_table else []
+                tables_result.astropy_table.array
+                if isinstance(tables_result, VOTable) and tables_result.astropy_table
+                else []
             )
 
             if fullscan:
@@ -125,7 +140,6 @@ class QueryGenerator:
             Query: The query
         """
         q = f"SELECT TOP 1 * FROM {StringProcessor.fix_keywords(table_name)}"
-
         return Query(
             query_text=q,
             schema_name=schema_name,

@@ -6,7 +6,7 @@ from tapvalidator.models.status import Status
 from tapvalidator.logger.logger import logger
 from tapvalidator.utility.xml_parser import XMLParser
 
-__all__ = ["Result", "VOTable", "ValidationResult"]
+__all__ = ["Result", "VOTable", "ValidationResult", "TableValidationResult"]
 
 
 @dataclass
@@ -30,24 +30,42 @@ class VOTable(Result):
 
     astropy_table: Table | None = None
 
-    def __post_init__(self):
-        self.status = Status.SUCCESS
+    def parse_votable(self, data: str) -> Table | None:
+        """Parse a VOTable
+        Args:
+            data (str): VOTable as string
+        Returns:
+            Table | None: The parsed table or None if there was an issue
+        """
+        astropy_table = None
+
+        if not data:
+            return None
         try:
             parsed_table = parse(BytesIO(bytes(self.data, "utf-8")))
-            self.astropy_table = parsed_table.get_first_table()
+            astropy_table = parsed_table.get_first_table()
         except Exception as exc:
             logger.error(exc)
             logger.error(
                 f"Unable to parse Table from VOTable, "
                 f"got following response: {self.data}"
             )
-            votable_error = XMLParser.get_votable_error(self.data)
-            if votable_error:
-                self.messages.append(votable_error)
-            else:
-                self.messages.append(self.data)
             self.status = Status.FAIL
             self.astropy_table = None
+
+        if self.status is Status.FAIL:
+            try:
+                votable_error = XMLParser.get_votable_error(self.data)
+            except Exception as exc:
+                logger.error(exc)
+                logger.error("Unable to parse Error from VOTable")
+                votable_error = "Unknown error occured while trying to parse VOTable"
+            self.messages.append(votable_error)
+        return astropy_table
+
+    def __post_init__(self):
+        self.status = Status.SUCCESS
+        self.astropy_table = self.parse_votable(self.data)
 
     def __eq__(self, other):
         if not isinstance(other, VOTable):

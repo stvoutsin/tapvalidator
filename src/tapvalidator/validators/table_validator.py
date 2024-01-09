@@ -1,4 +1,5 @@
 import asyncio
+from typing import List
 
 from tapvalidator.models.tap_service import TAPService
 from tapvalidator.models.status import Status
@@ -6,7 +7,7 @@ from tapvalidator.models.query import Query
 from tapvalidator.models.result import TableValidationResult
 from tapvalidator.services.tap_query_generator import QueryGenerator
 from tapvalidator.services.tap_query import QueryRunner
-from tapvalidator.logger.logger import logger, query_validation_logger
+from tapvalidator.logger.logger import logger
 from tapvalidator.comparators.columns import ColumnComparator
 from tapvalidator.settings import settings
 from tapvalidator.validators.protocol import Validator
@@ -24,33 +25,33 @@ class TableValidator(Validator):
         self.semaphore = asyncio.Semaphore(settings.max_parallel_tasks)
 
     @staticmethod
-    async def handle_errors(q: Query, validation_result: TableValidationResult):
+    async def handle_errors(query: Query, validation_result: TableValidationResult):
         """Handles the errors of a Query validation
 
         Args:
-            q (Query): The Query that is being validated
+            query (Query): The Query that is being validated
             validation_result (TableValidationResult): The Validation Result object
         """
-        if q.status in (Status.FAIL, Status.TRUNCATED):
-            error_message = f"Query Failed [{q.query_text}]"
-            validation_result.failures.append(q)
-            validation_result.status = q.status
+        if query.status in (Status.FAIL, Status.TRUNCATED):
+            error_message = f"Query Failed [{query.query_text}]"
+            validation_result.failures.append(query)
+            validation_result.status = query.status
 
             logger.error(
                 error_message,
-                query=q.query_text,
-                schema=q.schema_name,
+                query=query.query_text,
+                schema=query.schema_name,
             )
-        elif q.status is Status.COLUMN_VALIDATION_FAIL:
+        elif query.status is Status.COLUMN_VALIDATION_FAIL:
             error_message = (
-                f"Validation Failed [{q.query_text}] [Column Validation Error]"
+                f"Validation Failed [{query.query_text}] [Column Validation Error]"
             )
             validation_result.status = Status.COLUMN_VALIDATION_FAIL
-            validation_result.failures.append(q)
+            validation_result.failures.append(query)
             logger.error(
                 error_message,
-                query=q.query_text,
-                schema=q.schema_name,
+                query=query.query_text,
+                schema=query.schema_name,
                 error=Status.COLUMN_VALIDATION_FAIL,
             )
         else:
@@ -67,7 +68,9 @@ class TableValidator(Validator):
             table_name=q.table_name,
             schema_name=q.schema_name,
         )
-        QueryRunner.run_sync_query(expected_columns_query)
+        query_task = await QueryRunner.send_query(expected_columns_query)
+        await QueryRunner.get_result(query_task)
+
         column_validation_success = ColumnComparator.compare(
             actual=q.result,
             expected=expected_columns_query.result,
@@ -76,37 +79,24 @@ class TableValidator(Validator):
         if not column_validation_success:
             q.update_status(Status.COLUMN_VALIDATION_FAIL)
 
-    @query_validation_logger
-    async def validate_single_query(
-        self, q: Query, validation_result: TableValidationResult
-    ) -> TableValidationResult:
-        """Validates a single Query to a TAP Service
-        Args:
-            q (Query): The Query to validate
-            validation_result (TableValidationResult): The Validation Result object
-        Returns:
-            ValidationResult: The result of the validation
-        """
-        QueryRunner.run_sync_query(q)
-        if q.status is Status.SUCCESS:
-            await self.validate_columns(q)
-        await TableValidator.handle_errors(q, validation_result)
-        return validation_result
-
-    async def validate_query_async(
-        self, query: Query, tasks: list, validation_result: TableValidationResult
-    ):
-        """Validate a query asynchronously
+    # Define a function to send tasks in parallel
+    @staticmethod
+    async def send_queries_parallel(queries: List[Query]):
+        """Send a list of queries in Parallel
 
         Args:
-            query (Query): Query to validate
-            tasks (list): List of tasks
-            validation_result (TableValidationResult): The validation result object
+            queries (List[Query]): The list of queries
         """
-        async with self.semaphore:
-            # Run the query asynchronously
-            task = self.validate_single_query(query, validation_result)
-            tasks.append(task)
+
+        semaphore = asyncio.Semaphore(settings.max_parallel_tasks)
+
+        async def send_query_with_semaphore(query):
+            async with semaphore:
+                return await QueryRunner.send_query(query)
+
+        tasks = [send_query_with_semaphore(query) for query in queries]
+        results = await asyncio.gather(*tasks)
+        [await QueryRunner.get_result(task) for task in results]
 
     async def validate(self) -> TableValidationResult:
         """Validate the Tables of a TAP Service
@@ -115,24 +105,12 @@ class TableValidator(Validator):
             ValidationResult: The Validation Result object
         """
 
-        tasks = []  # type: ignore
-        validation_result = TableValidationResult()
-
+        validation_result = TableValidationResult(status=Status.SUCCESS)
         query_gen = QueryGenerator.generate_queries(self.tap_service, self.fullscan)
-        queries = [query for query in query_gen]
+        queries = [query async for query in query_gen]
 
-        # Create a list of tasks to be awaited
-        await asyncio.gather(
-            *[
-                self.validate_query_async(query, tasks, validation_result)
-                for query in queries
-            ]
-        )
+        await self.send_queries_parallel(queries)
+        for query in queries:
+            await self.handle_errors(query=query, validation_result=validation_result)
 
-        # Wait for all tasks to complete
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        for res in results:
-            if isinstance(res, TableValidationResult):
-                if res.status is not Status.SUCCESS:
-                    validation_result.status = res.status
         return validation_result
